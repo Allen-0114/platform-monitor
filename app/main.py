@@ -4,7 +4,8 @@ import random
 from datetime import datetime
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql+psycopg2://monitor:monitor123@localhost:5432/platform_monitor"
+import os
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "postgresql+psycopg2://monitor:monitor123@localhost:5432/platform_monitor")
 db = SQLAlchemy(app)
 
 class ServerStatus(db.Model):
