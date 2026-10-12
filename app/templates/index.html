@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>Platform Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        body { font-family: -apple-system, sans-serif; background: #0f0f0f; color: #eee; padding: 30px; }
+        h1 { color: #4ade80; }
+        .card { background: #1a1a1a; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+        .status-online { color: #4ade80; }
+        .status-offline { color: #f87171; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #333; }
+        canvas { max-height: 300px; }
+    </style>
+</head>
+<body>
+    <h1>🎮 Platform Monitor</h1>
+    <div class="card">
+        <table id="server-table">
+            <thead>
+                <tr><th>服務</th><th>狀態</th><th>CPU</th><th>在線玩家</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="card">
+        <canvas id="cpu-chart"></canvas>
+    </div>
+
+    <script>
+        async function loadServers() {
+            const res = await fetch('/api/servers');
+            const data = await res.json();
+            const tbody = document.querySelector('#server-table tbody');
+            tbody.innerHTML = '';
+            data.forEach(s => {
+                const statusClass = s.status === 'online' ? 'status-online' : 'status-offline';
+                tbody.innerHTML += `<tr>
+                    <td>${s.name}</td>
+                    <td class="${statusClass}">${s.status}</td>
+                    <td>${s.cpu}%</td>
+                    <td>${s.players}</td>
+                </tr>`;
+            });
+            return data;
+        }
+
+        async function loadChart() {
+            const res = await fetch('/api/history/CS-PH-02');
+            const data = (await res.json()).reverse();
+            const ctx = document.getElementById('cpu-chart');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => new Date(d.recorded_at).toLocaleTimeString()),
+                    datasets: [{
+                        label: 'CS-PH-02 CPU 使用率',
+                        data: data.map(d => d.cpu),
+                        borderColor: '#4ade80',
+                        tension: 0.3
+                    }]
+                }
+            });
+        }
+
+        loadServers();
+        loadChart();
+        setInterval(loadServers, 5000);
+    </script>
+</body>
+</html>
