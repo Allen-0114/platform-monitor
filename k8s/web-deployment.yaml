@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: web
+        image: platform-monitor-web:latest
+        imagePullPolicy: Never
+        env:
+        - name: DATABASE_URL
+          value: postgresql+psycopg2://monitor:monitor123@db:5432/platform_monitor
+        ports:
+        - containerPort: 5001
